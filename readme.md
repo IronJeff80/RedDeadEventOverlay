@@ -19,24 +19,34 @@ This is a professional, real-time overlay designed specifically for Red Dead Onl
 ---
 
 ## 📸 Preview
-*(Replace the image below with a real screenshot of your overlay once uploaded!)*
 ![Overlay Preview](preview.png)
 
 ---
 
-## 📂 Folder Structure
-For the code to find your assets correctly, your repository **must** follow this exact structure:
+## 🛠️ Setup Instructions
+![Browser Source Configuaration](sourceConfig.png)
+1. OBS Browser Source
 
-```text
-/ (Root)
-├── index.html              # The main overlay code
-├── fme.wav                 # The notification sound
-├── images/
-│   └── toast_bg.png        # Background UI graphic
-├── fonts/
-│   ├── RDRLino-Regular.ttf
-│   └── HapnaSlabSerif-Medium.ttf
-└── fme/
-    ├── fme_trade_route.png
-    ├── fme_condor_egg.png
-    └── (All other event icons...)
+    Add Source: Create a new Browser Source in OBS.
+
+    URL: https://ironjeff80.github.io/RedDeadEventOverlay.
+
+    Dimensions: Set Width to 1920 and Height to 1080.
+
+    Check "Control Audio via OBS" to manage the alert volume through the OBS mixer. and "Shutdown source when not visible" so alerts dont fire while you have the source hidden.
+
+2. Streamer.bot Integration
+
+    Import: Drag and drop streamerBotImport.txt into Streamer.bot's import window.
+
+    WebSocket: Ensure your server is running on 127.0.0.1:8080 (the default).
+
+    Commands: The overlay will now listen for the fme global variable and respond to chat commands automatically.
+
+## 📜 Credits
+
+    Typography: RDR Lino & Hapna Slab Serif.
+
+    Logic: Built for the RDO Community.
+
+    Assets: Inspired by Rockstar Games' Red Dead Online.
