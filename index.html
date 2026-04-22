@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Dead Online Event Overlay</title>
+
+    <meta name="description"
+        content="A real-time Free Mode Event overlay for Red Dead Online. Features automated UTC-synced schedules and professional toast notifications.">
+    <meta name="keywords" content="Red Dead Online, RDO, Free Mode Events, OBS Overlay, Streamer Tools, Rockstar Games">
+    <meta name="author" content="2 Smokin' Barrels">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Red Dead Online Event Overlay">
+    <meta property="og:description" content="Automatic countdowns and notifications for RDO Free Mode Events.">
+    <meta property="og:image" content="images/toast_bg.png">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Red Dead Online Event Overlay">
+    <meta property="twitter:description"
+        content="Never miss a Trade Route or Condor Egg again. Automated RDO event notifications for streamers.">
+
+
+    <script src="https://unpkg.com/@streamerbot/client/dist/streamerbot-client.js"></script>
+
+    <style>
+        @font-face {
+            font-family: "RDR Lino";
+            src: url("fonts/RDRLino-Regular.ttf");
+        }
+
+        @font-face {
+            font-family: "HapnaMedium";
+            src: url("fonts/HapnaSlabSerif-Medium.ttf");
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        #toast {
+            position: absolute;
+            top: 375px;
+            left: 29px;
+            width: 503px;
+            height: 112px;
+            clip-path: inset(0 100% 0 0);
+            transition: clip-path .25s ease;
+        }
+
+        #toast.show {
+            clip-path: inset(0 0 0 0);
+        }
+
+        #toast.hide {
+            clip-path: inset(0 100% 0 0);
+        }
+
+        #toastBG {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        #content {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            padding-left: 22px;
+            box-sizing: border-box;
+        }
+
+        #eventImage {
+            width: 80px;
+            height: 80px;
+            margin-right: 18px;
+        }
+
+        #textBlock {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        #eventName {
+            font-family: "RDR Lino";
+            font-size: 28px;
+            color: #a970ff;
+        }
+
+        #timer {
+            font-family: "HapnaMedium";
+            font-size: 24px;
+            color: white;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="toast">
+        <img id="toastBG" src="images/toast_bg.png">
+        <div id="content">
+            <img id="eventImage">
+            <div id="textBlock">
+                <div id="eventName"></div>
+                <div id="timer"></div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="fmeSound" src="fme.wav"></audio>
+
+    <script>
+        /* STREAMERBOT CONNECTION */
+        const client = new StreamerbotClient({ host: '127.0.0.1' });
+
+        client.on('Connected', () => {
+            client.subscribe('Misc.GlobalVariableUpdated');
+        });
+
+        /* SCHEDULE (UTC BASE) */
+        const schedule = [
+            { "time": "00:00", "name": "Cold Dead Hands" }, { "time": "00:45", "name": "Railroad Baron" },
+            { "time": "01:30", "name": "Wild Animal Kills" }, { "time": "02:15", "name": "Fool's Gold" },
+            { "time": "03:00", "name": "Random Challenge" }, { "time": "03:45", "name": "Wildlife Photographer" },
+            { "time": "04:30", "name": "King of the Castle" }, { "time": "05:15", "name": "Swamp Fishing Challenge" },
+            { "time": "06:00", "name": "Dispatch Rider" }, { "time": "06:45", "name": "Random Challenge" },
+            { "time": "07:30", "name": "Wildlife Photographer" }, { "time": "08:15", "name": "Railroad Baron" },
+            { "time": "09:00", "name": "Master Archer" }, { "time": "09:45", "name": "Wildlife Photographer" },
+            { "time": "10:30", "name": "Lake Fishing Challenge" }, { "time": "11:15", "name": "King of the Castle" },
+            { "time": "12:00", "name": "Cold Dead Hands" }, { "time": "12:45", "name": "Railroad Baron" },
+            { "time": "13:30", "name": "Wild Animal Kills" }, { "time": "14:15", "name": "Fool's Gold" },
+            { "time": "15:00", "name": "Random Challenge" }, { "time": "15:45", "name": "Wildlife Photographer" },
+            { "time": "16:30", "name": "King of the Castle" }, { "time": "17:15", "name": "Swamp Fishing Challenge" },
+            { "time": "18:00", "name": "Dispatch Rider" }, { "time": "18:45", "name": "Random Challenge" },
+            { "time": "19:30", "name": "Wildlife Photographer" }, { "time": "20:15", "name": "Railroad Baron" },
+            { "time": "21:00", "name": "Master Archer" }, { "time": "21:45", "name": "Wildlife Photographer" },
+            { "time": "22:30", "name": "Lake Fishing Challenge" }, { "time": "23:15", "name": "King of the Castle" },
+            { "time": "00:22", "name": "Protect Legendary Animal" }, { "time": "01:52", "name": "Day of Reckoning" },
+            { "time": "03:22", "name": "Wild Animal Tagging" }, { "time": "04:52", "name": "Manhunt" },
+            { "time": "06:22", "name": "Trade Route" }, { "time": "07:52", "name": "Condor Egg" },
+            { "time": "09:22", "name": "Day of Reckoning" }, { "time": "10:52", "name": "Protect Legendary Animal" },
+            { "time": "12:22", "name": "Manhunt" }, { "time": "13:52", "name": "Salvage" },
+            { "time": "14:22", "name": "Day of Reckoning" }, { "time": "15:52", "name": "Wild Animal Tagging" },
+            { "time": "17:22", "name": "Manhunt" }, { "time": "18:52", "name": "Trade Route" },
+            { "time": "20:22", "name": "Condor Egg" }, { "time": "21:52", "name": "Day of Reckoning" }
+        ];
+
+        const eventImages = {
+            "Cold Dead Hands": "fme_cold_dead_hands.png",
+            "Railroad Baron": "fme_railroad_baron.png",
+            "Wild Animal Kills": "fme_wild_animals_kills.png",
+            "Fool's Gold": "fme_fools_gold.png",
+            "Random Challenge": "fme_random.png",
+            "Wildlife Photographer": "fme_random.png",
+            "King of the Castle": "fme_king_of_the_castle.png",
+            "Swamp Fishing Challenge": "fme_swamp_fishing.png",
+            "Dispatch Rider": "fme_dispatch_rider.png",
+            "Master Archer": "fme_master_archer.png",
+            "Lake Fishing Challenge": "fme_lake_fishing.png",
+            "Protect Legendary Animal": "fme_protect_legendary_animal.png",
+            "Day of Reckoning": "fme_day_of_reckoning.png",
+            "Wild Animal Tagging": "fme_random.png",
+            "Manhunt": "fme_random.png",
+            "Trade Route": "fme_trade_route.png",
+            "Condor Egg": "fme_condor_egg.png",
+            "Salvage": "fme_salvage.png"
+        };
+
+        const aliases = {
+            rb: "Railroad Baron",
+            railroadbaron: "Railroad Baron",
+            railroadbarron: "Railroad Baron",
+            barron: "Railroad Baron",
+            fg: "Fool's Gold",
+            foolsgold: "Fool's Gold",
+            fools: "Fool's Gold",
+            kotc: "King of the Castle",
+            king: "King of the Castle",
+            kingofthecastle: "King of the Castle"
+        };
+
+        function normalize(text) {
+            return text.toLowerCase().replace(/[^a-z0-9]/g, "");
+        }
+
+        function formatTime(ms) {
+            let s = Math.floor(ms / 1000);
+            let h = Math.floor(s / 3600);
+            let m = Math.floor((s % 3600) / 60);
+            let sec = s % 60;
+            if (h > 0) return `${h}:${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+            return `${m}:${sec.toString().padStart(2, "0")}`;
+        }
+
+        function getNextEvent() {
+            const now = new Date();
+            let candidates = [];
+            for (let e of schedule) {
+                let [hrs, mins] = e.time.split(":").map(Number);
+                let target = new Date();
+                target.setUTCHours(hrs, mins, 0, 0);
+                if (target <= now) target.setUTCDate(target.getUTCDate() + 1);
+                candidates.push({ name: e.name, time: target });
+            }
+            candidates.sort((a, b) => a.time - b.time);
+            return candidates[0];
+        }
+
+        function nextOccurrence(name) {
+            const now = new Date();
+            let times = [];
+            for (let e of schedule) {
+                if (e.name !== name) continue;
+                let [hrs, mins] = e.time.split(":").map(Number);
+                let target = new Date();
+                target.setUTCHours(hrs, mins, 0, 0);
+                if (target <= now) target.setUTCDate(target.getUTCDate() + 1);
+                times.push(target);
+            }
+            times.sort((a, b) => a - b);
+            return times[0];
+        }
+
+        /* STREAMERBOT ACTIONS */
+        function sendCommandAction(eventName, time) {
+            client.doAction("2ec180c7-5702-4fe1-b87e-0c75a4090864", { event: eventName, time: time });
+        }
+
+        function sendTenMinuteAction(eventName, time) {
+            client.doAction("28bf37a1-487e-40ab-acdd-eccb1eb3eb2e", { event: eventName, time: time });
+        }
+
+        /* TOAST LOGIC */
+        let activeTime = null;
+        let autoTriggered = false;
+
+        function showToast(name, time) {
+            activeTime = time;
+
+            document.getElementById("eventName").textContent = name;
+            document.getElementById("eventImage").src = `fme/${eventImages[name] || "fme_random.png"}`;
+
+            let diff = activeTime - new Date();
+            document.getElementById("timer").textContent = "Starts in " + formatTime(diff);
+
+            const toast = document.getElementById("toast");
+            toast.classList.remove("hide");
+            toast.classList.add("show");
+
+            const sound = document.getElementById("fmeSound");
+            sound.currentTime = 0;
+
+            // ADJUST VOLUME HERE (0.3 is 30% volume)
+            sound.volume = 0.2;
+
+            sound.play().catch(() => { });
+
+            setTimeout(() => {
+                toast.classList.remove("show");
+                toast.classList.add("hide");
+            }, 20000);
+        }
+
+        /* TICKERS */
+        setInterval(() => {
+            if (!activeTime) return;
+            let diff = activeTime - new Date();
+            document.getElementById("timer").textContent = "Starts in " + formatTime(diff);
+        }, 1000);
+
+        setInterval(() => {
+            let next = getNextEvent();
+            let diff = next.time - new Date();
+
+            if (diff < 600000 && !autoTriggered) {
+                autoTriggered = true;
+                showToast(next.name, next.time);
+                sendTenMinuteAction(next.name, formatTime(diff));
+            }
+
+            if (diff > 600000) autoTriggered = false;
+        }, 1000);
+
+        /* STREAMERBOT COMMAND LISTENER */
+        client.on('Misc.GlobalVariableUpdated', (data) => {
+            if (data.data.name !== "fme") return;
+            let json = JSON.parse(data.data.newValue);
+            let query = normalize(json.event || "");
+
+            if (query === "next") {
+                let next = getNextEvent();
+                showToast(next.name, next.time);
+                sendCommandAction(next.name, formatTime(next.time - new Date()));
+                return;
+            }
+
+            let name = aliases[query] || json.event;
+            let time = nextOccurrence(name);
+
+            if (time) {
+                showToast(name, time);
+                sendCommandAction(name, formatTime(time - new Date()));
+            }
+        });
+    </script>
+</body>
+
+</html>
