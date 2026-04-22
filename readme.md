@@ -12,7 +12,7 @@ This is a professional, real-time overlay designed specifically for Red Dead Onl
 ## ✨ Features
 * 🌍 **Global UTC Sync:** Zero manual setup. Whether you're in PST, EST, or GMT, the schedule stays 100% accurate without Daylight Savings headaches.
 * 🔔 **Auto-Notifications:** A notification "toast" slides in exactly 10 minutes before every event.
-* 💬 **Chat Commands:** Full integration for `!fme` for the next event or specific event lookups (e.g., `!trade route` or `!tr`, `!King of the castle` or `!kotc`, `!fools gold` or `!fg` ect).
+* 💬 **Chat Commands:** Full integration for `!fme` for the next event or specific event lookups (e.g., `!fme trade route` or `!fme tr`, `!fme King of the castle` or `!fme kotc`, `!fools gold` or `!fme fg` ect).
 * 🎨 **RDR Aesthetic:** Matches the RDO interface with high-quality icons and game-accurate fonts.
 * 🔊 **Audio Alerts:** Built-in spatial sound notification with customizable volume.
 
