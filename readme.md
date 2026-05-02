@@ -29,7 +29,7 @@ This is a professional, real-time overlay designed specifically for Red Dead Onl
 
     Add Source: Create a new Browser Source in OBS.
 
-    URL: https://ironjeff80.github.io/RedDeadEventOverlay.
+    URL: https://ironjeff80.github.io/reddeadoverlay.
 
     Dimensions: Set Width to 1920 and Height to 1080.
 
